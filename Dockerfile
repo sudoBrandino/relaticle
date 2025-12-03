@@ -1,7 +1,29 @@
 # syntax=docker/dockerfile:1
 
 ###########################################
-# Stage 1: Build frontend assets
+# Stage 1: Install PHP dependencies
+###########################################
+FROM composer:2 AS composer
+
+WORKDIR /app
+
+# Copy entire application source (needed for path/vcs repos)
+COPY . .
+
+# Install dependencies without dev dependencies
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --no-scripts \
+    --no-autoloader \
+    --prefer-source \
+    --ignore-platform-reqs
+
+# Generate optimized autoloader
+RUN composer dump-autoload --optimize --no-dev --ignore-platform-reqs
+
+###########################################
+# Stage 2: Build frontend assets
 ###########################################
 FROM node:22-alpine AS frontend
 
@@ -19,30 +41,11 @@ COPY resources ./resources
 COPY public ./public
 COPY app-modules ./app-modules
 
+# Copy vendor from composer stage (needed for Filament CSS)
+COPY --from=composer /app/vendor ./vendor
+
 # Build assets
 RUN npm run build
-
-###########################################
-# Stage 2: Install PHP dependencies
-###########################################
-FROM composer:2 AS composer
-
-WORKDIR /app
-
-# Copy entire application source first (needed for path/vcs repos)
-COPY . .
-
-# Install dependencies without dev dependencies
-RUN composer install \
-    --no-dev \
-    --no-interaction \
-    --no-scripts \
-    --no-autoloader \
-    --prefer-source \
-    --ignore-platform-reqs
-
-# Generate optimized autoloader
-RUN composer dump-autoload --optimize --no-dev --ignore-platform-reqs
 
 ###########################################
 # Stage 3: Production image
