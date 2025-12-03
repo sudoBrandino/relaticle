@@ -28,8 +28,8 @@ FROM composer:2 AS composer
 
 WORKDIR /app
 
-# Copy composer files
-COPY composer.json composer.lock ./
+# Copy entire application source first (needed for path/vcs repos)
+COPY . .
 
 # Install dependencies without dev dependencies
 RUN composer install \
@@ -37,13 +37,11 @@ RUN composer install \
     --no-interaction \
     --no-scripts \
     --no-autoloader \
-    --prefer-dist
-
-# Copy application source
-COPY . .
+    --prefer-source \
+    --ignore-platform-reqs
 
 # Generate optimized autoloader
-RUN composer dump-autoload --optimize --no-dev
+RUN composer dump-autoload --optimize --no-dev --ignore-platform-reqs
 
 ###########################################
 # Stage 3: Production image
