@@ -17,6 +17,7 @@ RUN npm ci
 COPY vite.config.js ./
 COPY resources ./resources
 COPY public ./public
+COPY app-modules ./app-modules
 
 # Build assets
 RUN npm run build
