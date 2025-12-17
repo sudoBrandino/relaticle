@@ -78,7 +78,18 @@ composer lint
 
 # Docker Deployment
 
+## Production Deployment
+
 For production deployment using Docker, see [`docker-compose.prod.yml`](docker-compose.prod.yml).
+
+## Unraid Deployment
+
+For easy deployment on Unraid servers, we provide:
+- **Docker Compose Stack**: All-in-one deployment with all services
+- **Community Applications Template**: Install from Unraid Apps tab
+- **Comprehensive Documentation**: Step-by-step setup guides
+
+See the [Unraid deployment guide](unraid/UNRAID-DEPLOYMENT.md) for detailed instructions.
 
 # Documentation
 

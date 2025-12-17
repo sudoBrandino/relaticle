@@ -1,0 +1,208 @@
+version: '3.8'
+
+# Unraid Docker Compose Stack for Relaticle CRM
+# This is a complete stack that includes all required services
+#
+# Quick Start:
+# 1. Copy this file to your Unraid server
+# 2. Create a .env file with your configuration (see .env.example)
+# 3. Generate APP_KEY: docker run --rm ghcr.io/relaticle/relaticle:latest php artisan key:generate --show
+# 4. Run: docker compose -f docker-compose-unraid.yml up -d
+#
+# For detailed instructions, see UNRAID-DEPLOYMENT.md
+
+services:
+  # Main application service
+  app:
+    image: ghcr.io/relaticle/relaticle:latest
+    container_name: relaticle-app
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      # Application Settings
+      APP_NAME: ${APP_NAME:-Relaticle}
+      APP_ENV: ${APP_ENV:-production}
+      APP_KEY: ${APP_KEY:?APP_KEY is required - generate with php artisan key:generate}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_TIMEZONE: ${APP_TIMEZONE:-UTC}
+      APP_URL: ${APP_URL:-http://localhost}
+
+      # Logging
+      LOG_CHANNEL: ${LOG_CHANNEL:-stderr}
+      LOG_LEVEL: ${LOG_LEVEL:-warning}
+
+      # Database Configuration
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-relaticle}
+      DB_USERNAME: ${DB_USERNAME:-relaticle}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+
+      # Redis Configuration
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
+      REDIS_PORT: 6379
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+
+      # Mail Configuration (optional)
+      MAIL_MAILER: ${MAIL_MAILER:-log}
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-tls}
+      MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-hello@example.com}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Relaticle}
+
+      # OAuth Configuration (optional)
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+
+      # Laravel Automations (recommended for Unraid)
+      AUTORUN_ENABLED: "true"
+      AUTORUN_LARAVEL_MIGRATION: "true"
+      AUTORUN_LARAVEL_MIGRATION_ISOLATION: "true"
+      AUTORUN_LARAVEL_STORAGE_LINK: "true"
+      AUTORUN_LARAVEL_CONFIG_CACHE: "true"
+      AUTORUN_LARAVEL_ROUTE_CACHE: "true"
+      AUTORUN_LARAVEL_VIEW_CACHE: "true"
+    volumes:
+      - ${APPDATA_PATH:-/mnt/user/appdata/relaticle}/storage:/var/www/html/storage/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    networks:
+      - relaticle
+
+  # Queue worker service (Laravel Horizon)
+  horizon:
+    image: ghcr.io/relaticle/relaticle:latest
+    container_name: relaticle-horizon
+    restart: unless-stopped
+    command: ["php", "/var/www/html/artisan", "horizon"]
+    stop_signal: SIGTERM
+    environment:
+      APP_NAME: ${APP_NAME:-Relaticle}
+      APP_ENV: ${APP_ENV:-production}
+      APP_KEY: ${APP_KEY:?APP_KEY is required}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL:-http://localhost}
+      LOG_CHANNEL: ${LOG_CHANNEL:-stderr}
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-relaticle}
+      DB_USERNAME: ${DB_USERNAME:-relaticle}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
+      REDIS_PORT: 6379
+      QUEUE_CONNECTION: redis
+      AUTORUN_ENABLED: "false"
+    volumes:
+      - ${APPDATA_PATH:-/mnt/user/appdata/relaticle}/storage:/var/www/html/storage/app
+    depends_on:
+      app:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "php", "/var/www/html/artisan", "horizon:status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - relaticle
+
+  # Scheduler service (Laravel Cron)
+  scheduler:
+    image: ghcr.io/relaticle/relaticle:latest
+    container_name: relaticle-scheduler
+    restart: unless-stopped
+    command: ["php", "/var/www/html/artisan", "schedule:work"]
+    environment:
+      APP_NAME: ${APP_NAME:-Relaticle}
+      APP_ENV: ${APP_ENV:-production}
+      APP_KEY: ${APP_KEY:?APP_KEY is required}
+      APP_DEBUG: ${APP_DEBUG:-false}
+      APP_URL: ${APP_URL:-http://localhost}
+      LOG_CHANNEL: ${LOG_CHANNEL:-stderr}
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-relaticle}
+      DB_USERNAME: ${DB_USERNAME:-relaticle}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-null}
+      REDIS_PORT: 6379
+      QUEUE_CONNECTION: redis
+      AUTORUN_ENABLED: "false"
+    volumes:
+      - ${APPDATA_PATH:-/mnt/user/appdata/relaticle}/storage:/var/www/html/storage/app
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - relaticle
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:16-alpine
+    container_name: relaticle-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-relaticle}
+      POSTGRES_USER: ${DB_USERNAME:-relaticle}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ${APPDATA_PATH:-/mnt/user/appdata/relaticle}/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-relaticle} -d ${DB_DATABASE:-relaticle}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - relaticle
+
+  # Redis cache and queue backend
+  redis:
+    image: redis:7-alpine
+    container_name: relaticle-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes ${REDIS_PASSWORD:+--requirepass ${REDIS_PASSWORD}}
+    volumes:
+      - ${APPDATA_PATH:-/mnt/user/appdata/relaticle}/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - relaticle
+
+networks:
+  relaticle:
+    driver: bridge
+
+volumes:
+  storage:
+  postgres:
+  redis:

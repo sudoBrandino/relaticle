@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>Relaticle</Name>
+  <Repository>ghcr.io/relaticle/relaticle:latest</Repository>
+  <Registry>https://ghcr.io/relaticle/relaticle</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/Relaticle/relaticle/discussions</Support>
+  <Project>https://relaticle.com</Project>
+  <Overview>Relaticle is a powerful, adaptable open-source CRM platform built for teams who've outgrown spreadsheets but find Salesforce overkill. Built on Laravel 12, PHP 8.4, and Filament 4 with complete data ownership through self-hosting.&#xD;
+&#xD;
+[b]Features:[/b]&#xD;
+- Fully Customizable with no-code custom fields&#xD;
+- Multi-Team Support with isolated workspaces&#xD;
+- Modern Technology Stack (Laravel 12, PHP 8.4, Filament 4)&#xD;
+- Privacy-Focused Self-Hosting&#xD;
+- Open Source (AGPL-3.0)&#xD;
+&#xD;
+[b]Requirements:[/b]&#xD;
+- PostgreSQL 16 (recommended to use separate Postgres container)&#xD;
+- Redis (recommended to use separate Redis container)&#xD;
+&#xD;
+[b]Initial Setup:[/b]&#xD;
+1. Start PostgreSQL and Redis containers first&#xD;
+2. Generate APP_KEY by running: docker run --rm ghcr.io/relaticle/relaticle:latest php artisan key:generate --show&#xD;
+3. Copy the generated key (starts with base64:)&#xD;
+4. Paste it into the APP_KEY field below&#xD;
+5. Configure database and Redis connection details&#xD;
+6. Start the container&#xD;
+7. Access Relaticle at http://[IP]:[PORT]&#xD;
+&#xD;
+[b]Note:[/b] This template requires PostgreSQL and Redis. You can install them from Community Applications or use the stack deployment method for an all-in-one solution.</Overview>
+  <Category>Productivity: Tools:</Category>
+  <WebUI>http://[IP]:[PORT:8080]</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/Relaticle/relaticle/main/unraid/relaticle.xml</TemplateURL>
+  <Icon>https://relaticle.com/relaticle-logo.svg</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled></DateInstalled>
+  <DonateText/>
+  <DonateLink/>
+  <Requires>PostgreSQL 16 and Redis containers running</Requires>
+  <Config Name="WebUI Port" Target="8080" Default="8080" Mode="tcp" Description="Web interface port" Type="Port" Display="always" Required="true" Mask="false">8080</Config>
+  <Config Name="APP_NAME" Target="APP_NAME" Default="Relaticle" Mode="" Description="Application name" Type="Variable" Display="always" Required="false" Mask="false">Relaticle</Config>
+  <Config Name="APP_ENV" Target="APP_ENV" Default="production" Mode="" Description="Application environment (production recommended)" Type="Variable" Display="always" Required="true" Mask="false">production</Config>
+  <Config Name="APP_KEY" Target="APP_KEY" Default="" Mode="" Description="Application encryption key (REQUIRED - generate using command in overview)" Type="Variable" Display="always" Required="true" Mask="true"></Config>
+  <Config Name="APP_DEBUG" Target="APP_DEBUG" Default="false" Mode="" Description="Enable debug mode (false for production)" Type="Variable" Display="always" Required="false" Mask="false">false</Config>
+  <Config Name="APP_URL" Target="APP_URL" Default="http://localhost" Mode="" Description="Full application URL (e.g., https://crm.yourdomain.com)" Type="Variable" Display="always" Required="true" Mask="false">http://localhost</Config>
+  <Config Name="LOG_CHANNEL" Target="LOG_CHANNEL" Default="stderr" Mode="" Description="Logging channel" Type="Variable" Display="advanced" Required="false" Mask="false">stderr</Config>
+  <Config Name="LOG_LEVEL" Target="LOG_LEVEL" Default="warning" Mode="" Description="Log level (debug, info, notice, warning, error, critical, alert, emergency)" Type="Variable" Display="advanced" Required="false" Mask="false">warning</Config>
+  <Config Name="DB_CONNECTION" Target="DB_CONNECTION" Default="pgsql" Mode="" Description="Database connection type (pgsql)" Type="Variable" Display="always" Required="true" Mask="false">pgsql</Config>
+  <Config Name="DB_HOST" Target="DB_HOST" Default="" Mode="" Description="PostgreSQL host (IP or container name)" Type="Variable" Display="always" Required="true" Mask="false"></Config>
+  <Config Name="DB_PORT" Target="DB_PORT" Default="5432" Mode="" Description="PostgreSQL port" Type="Variable" Display="always" Required="true" Mask="false">5432</Config>
+  <Config Name="DB_DATABASE" Target="DB_DATABASE" Default="relaticle" Mode="" Description="Database name" Type="Variable" Display="always" Required="true" Mask="false">relaticle</Config>
+  <Config Name="DB_USERNAME" Target="DB_USERNAME" Default="relaticle" Mode="" Description="Database username" Type="Variable" Display="always" Required="true" Mask="false">relaticle</Config>
+  <Config Name="DB_PASSWORD" Target="DB_PASSWORD" Default="" Mode="" Description="Database password (REQUIRED)" Type="Variable" Display="always" Required="true" Mask="true"></Config>
+  <Config Name="REDIS_HOST" Target="REDIS_HOST" Default="" Mode="" Description="Redis host (IP or container name)" Type="Variable" Display="always" Required="true" Mask="false"></Config>
+  <Config Name="REDIS_PORT" Target="REDIS_PORT" Default="6379" Mode="" Description="Redis port" Type="Variable" Display="always" Required="true" Mask="false">6379</Config>
+  <Config Name="REDIS_PASSWORD" Target="REDIS_PASSWORD" Default="null" Mode="" Description="Redis password (use 'null' if no password)" Type="Variable" Display="always" Required="false" Mask="true">null</Config>
+  <Config Name="CACHE_STORE" Target="CACHE_STORE" Default="redis" Mode="" Description="Cache driver" Type="Variable" Display="advanced" Required="false" Mask="false">redis</Config>
+  <Config Name="SESSION_DRIVER" Target="SESSION_DRIVER" Default="redis" Mode="" Description="Session driver" Type="Variable" Display="advanced" Required="false" Mask="false">redis</Config>
+  <Config Name="QUEUE_CONNECTION" Target="QUEUE_CONNECTION" Default="redis" Mode="" Description="Queue connection" Type="Variable" Display="advanced" Required="false" Mask="false">redis</Config>
+  <Config Name="MAIL_MAILER" Target="MAIL_MAILER" Default="log" Mode="" Description="Mail driver (log, smtp, sendmail, etc.)" Type="Variable" Display="advanced" Required="false" Mask="false">log</Config>
+  <Config Name="MAIL_HOST" Target="MAIL_HOST" Default="" Mode="" Description="SMTP host (if using SMTP)" Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="MAIL_PORT" Target="MAIL_PORT" Default="587" Mode="" Description="SMTP port" Type="Variable" Display="advanced" Required="false" Mask="false">587</Config>
+  <Config Name="MAIL_USERNAME" Target="MAIL_USERNAME" Default="" Mode="" Description="SMTP username" Type="Variable" Display="advanced" Required="false" Mask="false"></Config>
+  <Config Name="MAIL_PASSWORD" Target="MAIL_PASSWORD" Default="" Mode="" Description="SMTP password" Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
+  <Config Name="MAIL_ENCRYPTION" Target="MAIL_ENCRYPTION" Default="tls" Mode="" Description="SMTP encryption (tls or ssl)" Type="Variable" Display="advanced" Required="false" Mask="false">tls</Config>
+  <Config Name="MAIL_FROM_ADDRESS" Target="MAIL_FROM_ADDRESS" Default="hello@example.com" Mode="" Description="From email address" Type="Variable" Display="advanced" Required="false" Mask="false">hello@example.com</Config>
+  <Config Name="MAIL_FROM_NAME" Target="MAIL_FROM_NAME" Default="Relaticle" Mode="" Description="From name" Type="Variable" Display="advanced" Required="false" Mask="false">Relaticle</Config>
+  <Config Name="Storage Volume" Target="/var/www/html/storage/app" Default="/mnt/user/appdata/relaticle/storage" Mode="rw" Description="Persistent storage for uploads and files" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/relaticle/storage</Config>
+  <Config Name="AUTORUN_ENABLED" Target="AUTORUN_ENABLED" Default="true" Mode="" Description="Enable Laravel automations on startup" Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+  <Config Name="AUTORUN_LARAVEL_MIGRATION" Target="AUTORUN_LARAVEL_MIGRATION" Default="true" Mode="" Description="Run database migrations on startup" Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+  <Config Name="AUTORUN_LARAVEL_MIGRATION_ISOLATION" Target="AUTORUN_LARAVEL_MIGRATION_ISOLATION" Default="true" Mode="" Description="Use migration isolation" Type="Variable" Display="advanced" Required="false" Mask="false">true</Config>
+</Container>
