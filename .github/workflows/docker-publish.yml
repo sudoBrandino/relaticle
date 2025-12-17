@@ -51,7 +51,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && github.repository == 'Relaticle/relaticle'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -63,7 +63,7 @@ jobs:
         with:
           images: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            ${{ env.DOCKERHUB_IMAGE }}
+            ${{ github.repository == 'Relaticle/relaticle' && env.DOCKERHUB_IMAGE || '' }}
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
@@ -79,9 +79,7 @@ jobs:
           target: production
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-            ${{ env.DOCKERHUB_IMAGE }}
+          tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha,scope=${{ matrix.platform }}
           cache-to: type=gha,mode=max,scope=${{ matrix.platform }}
           outputs: ${{ github.event_name != 'pull_request' && 'type=image,push-by-digest=true,name-canonical=true,push=true' || '' }}
@@ -132,6 +130,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log in to Docker Hub
+        if: github.repository == 'Relaticle/relaticle'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -170,6 +169,7 @@ jobs:
             $(printf '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@sha256:%s ' *)
 
       - name: Create manifest list and push to Docker Hub
+        if: github.repository == 'Relaticle/relaticle'
         working-directory: ${{ runner.temp }}/digests
         env:
           DOCKER_METADATA_OUTPUT_JSON: ${{ steps.meta-dockerhub.outputs.json }}
@@ -182,5 +182,6 @@ jobs:
           docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta-ghcr.outputs.version }}
 
       - name: Inspect Docker Hub image
+        if: github.repository == 'Relaticle/relaticle'
         run: |
           docker buildx imagetools inspect ${{ env.DOCKERHUB_IMAGE }}:${{ steps.meta-dockerhub.outputs.version }}
